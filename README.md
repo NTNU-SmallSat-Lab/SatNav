@@ -15,7 +15,8 @@ Then navigate to the root directory of the project and install the required depe
 
 ## Usage
 To run the program, run `python3 src/main.py`. 
-The program allows for user specified parameters, run `python3 src/main.py --help`  for more information about these. 
+The program allows for user specified parameters, run `python3 src/main.py --help`  for more information about these.
+TLE files are required to calculate the satellites's position and velocity. These are automatically downloaded from Celestrak if they are not present in the 'data' directory, or if it is more than 24 hours since the last download. Else it is assumed that the TLE files are up to date.
 
 The program will calculate the precise UTC time when the satellite is closest to the target and generate the quaternion to point the satellite's sensors. These are printed to the console.
 
@@ -25,4 +26,4 @@ The program will calculate the precise UTC time when the satellite is closest to
 * The program is under development, and unknown bugs are to be expected. 
 
 ## License
-This program is licensed under the Apache-2.0 License. See the LICENSE file for more information.
+This program is licensed under the Apache-2.0 License. See the `LICENSE` file for more information.
