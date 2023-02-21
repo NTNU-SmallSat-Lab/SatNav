@@ -7,7 +7,7 @@ StarNav is a Python program designed to calculate the precise UTC time when a sa
 
 To install the program, clone the repository to your local machine:
 
-`git clone https://github.com/yourusername/satellite-pointing-program.git`
+`git clone https://github.com/NTNU-SmallSat-Lab/StarNav.git`
 
 Then navigate to the root directory of the project and install the required dependencies using pip:
 
