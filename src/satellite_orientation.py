@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-import logging as log
+from logger import logger as log
 import math
 
 def get_positions(earth, time, target, object):
@@ -26,18 +26,6 @@ def eci2LVLH(r_i, v_i):
     v_o = np.dot(R_i_o, v_i) # velocity in orbit frame [km/s]
     
     return r_o, v_o, R_o_i
-
-# def rot_rodrigues(a,b):
-#     a_hat = a/np.linalg.norm(a)
-#     b_hat = b/np.linalg.norm(b)
-#     # theta = np.arccos(np.dot(a_hat.T, b_hat))
-#     theta = np.arccos(a_hat.T * b_hat)
-#     lmbda = np.cross(a_hat, b_hat)
-#     lmbda_hat = lmbda/np.linalg.norm(lmbda)
-#     skew = skew_sym(theta*lmbda_hat)
-#     R = scipy.linalg.expm(skew)
-    
-#     return R
 
 def rot_rodrigues(a, b, theta):
     a_hat = a/np.linalg.norm(a)
@@ -69,7 +57,7 @@ def rot2q(R):
     
     return q
 
-def get_quaternion(time_datetime, time, earth, target, sat):
+def get_quaternion(time, earth, target, sat):
     sat_pos, target_pos = get_positions(earth, time, target, sat)
     sat_vel = get_velocity(time, sat)
     log.info('sat_pos: {}'.format(sat_pos))
@@ -97,6 +85,7 @@ def get_quaternion(time_datetime, time, earth, target, sat):
     q_ob = rot2q(R_ob)
 
     log.info('----------------------------------------------------')
+    log.info('Time = {}'.format(time.utc_iso()))
     log.info('Qx = {:.10f}'.format(q_ob[1]))
     log.info('Qy = {:.10f}'.format(q_ob[2]))
     log.info('Qz = {:.10f}'.format(q_ob[3]))

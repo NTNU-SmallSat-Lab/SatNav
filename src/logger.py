@@ -23,7 +23,6 @@ class CustomFormatter(logging.Formatter):
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
     
-    
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
