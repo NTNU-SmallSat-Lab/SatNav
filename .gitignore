@@ -2,7 +2,8 @@
 src/data/config/config.json
 
 # Ignore all files in the tle_files directory
-src/data/tle_files/
+src/data/tle_files/*
+!src/data/tle_files/.gitkeep
 
 # Ignore the de421.bsp file
 /de421.bsp
