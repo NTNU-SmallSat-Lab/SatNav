@@ -43,7 +43,7 @@ def multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts):
         log.info('Qy = {:.10f}'.format(quaternion[2]))
         log.info('Qz = {:.10f}'.format(quaternion[3]))
         log.info('Qs = {:.10f}\n'.format(quaternion[0]))
-        log.info('Off-nadir angle = {:.10f} degrees')
+        log.info('Off-nadir angle = {:.10f} degrees'.format(off_nadir))
         count += 1
     
     log.info('----------------------------------------------------')
@@ -78,8 +78,8 @@ if __name__ == '__main__':
     start_time_delta = float(input('Enter hours in the future for start time of search (default is ' + '\033[34m' + '0' + '\033[0m' + ' (now)): ') or 0)
     end_time_delta = float(input('Enter hours in the future for end time of search (default is ' + '\033[34m' + '24' + '\033[0m' + ' (1 day from now)): ') or 24)
     if mode == '2':
-        intervals = int(input('Enter number of intervals to search (default is ' + '\033[34m' + 'end_time_delta/24' + '\033[0m' + ' (one capture per day)): ') or round(end_time_delta/24))
-    
+        intervals = int(input('Enter number of intervals to search (default is ' + '\033[34m' + 'end_time_delta/24' + '\033[0m' + ' (one capture per day)): ') or round((end_time_delta-start_time_delta)/24))
+        
     tol = float(input('Enter tolerance for minimum distance search (default is + ' + '\033[34m' + '1/24/60' + '\033[0m' + '(1 minute)): ') or 1/24/60)
     force = input('Enter ' + '\033[34m' + 'true' + '\033[0m' + ' to force update TLE data, or press Enter to skip: ').lower() == 'true'
     
