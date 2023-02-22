@@ -4,51 +4,50 @@ from distances import *
 from satellite_orientation import get_quaternion
 from logger import logger as log
 from skyfield.api import load
-import argparse
 from datetime import timedelta
+from pyfiglet import Figlet
+import json
 
 config_path = 'src/data/config/config.json'
 
 def main():
     ts = load.timescale()
+    t_now = ts.now()
     
-    log.info('\n--------Starting main.py--------\n')
-
     config = read_config(config_path)
-
     if not config:
         log.error('Error reading config file. Exiting.')
         return   
     
-    t_now = ts.now()
+    f = Figlet(font='slant')
+    print(f.renderText('SatNav'))
     
-    ap = argparse.ArgumentParser()
-    ap.add_argument('-c', '--catnr', help='Satellite catalog number (default is Hypso-1, 51053)', default=51053, type=int)
-    ap.add_argument('-s', '--start_time_delta', help='Hours in the future for start time of search (default is 0 (now))', default=0, type=float)
-    ap.add_argument('-e', '--end_time_delta', help='Hours in the future for end time of search (default is 24 (1 day from now))', default=24, type=float)
-    ap.add_argument('-t', '--tolerance', help='Tolerance for minimum distance search (default is 1/24/60 (1 minute)) IMPORTANT: Too low tolerance can result in the earth being between the satellite and the target. No lower than 1/24/30 is recommended.', default=1/24/60, type=float)
-    ap.add_argument('-f', '--force_update', help='Force update of TLE data', type=bool, default=False)
+    print('\033[34m' + '\033[1m' + '--------Satellite Targeting Tool--------\n' + '\033[0m', end='')
+    print('Enter the following information to configure the tool. Press enter to use default value.\n', end='')
     
-    args = ap.parse_args()
+    config['catnr'] = int(input('Enter satellite catalog number (default is ' + '\033[34m' + '51053' + '\033[0m' + '): ') or config['catnr'])
+    start_time_delta = float(input('Enter hours in the future for start time of search (default is ' + '\033[34m' + '0' + '\033[0m' + ' (now)): ') or 0)
+    end_time_delta = float(input('Enter hours in the future for end time of search (default is ' + '\033[34m' + '24' + '\033[0m' + ' (1 day from now)): ') or 24)
+    tol = float(input('Enter tolerance for minimum distance search (default is + ' + '\033[34m' + '1/24/60' + '\033[0m' + '(1 minute)): ') or 1/24/60)
+    force = input('Enter ' + '\033[34m' + 'true' + '\033[0m' + ' to force update TLE data, or press Enter to skip: ').lower() == 'true'
     
-    config['catnr'] = args.catnr
-    t_start = t_now + timedelta(hours=args.start_time_delta)
-    t_end = t_now + timedelta(hours=args.end_time_delta)
-    force = args.force_update
-    tol = args.tolerance
-
+    print('\033[0m')
+    
+    t_start = t_now + timedelta(hours=start_time_delta)
+    t_end = t_now + timedelta(hours=end_time_delta)
+    
     log.info('Using satellite catalog number: ' + str(config['catnr']))
     log.info('Using start time: {} UTC'.format(t_start.tt_strftime('%Y-%m-%d %H:%M:%S')))
     log.info('Using end time: {} UTC'.format(t_end.tt_strftime('%Y-%m-%d %H:%M:%S')))
     
     sat = get_satellite(config, force)
-    log.info('Config: ' + str(config))
+    log.info('Config: ' + json.dumps(config, indent=4))
     log.info('Epoch: ' + str(sat))
 
     _, min_distance_time_datetime = get_minimum_distance(t_start, t_end, sat, tolerance=tol)
-    min_distance_time = ts.from_datetime(min_distance_time_datetime)
+    min_distance_time_ts = ts.from_datetime(min_distance_time_datetime)
 
-    get_quaternion(min_distance_time_datetime, min_distance_time, earth, moon, sat)
+    get_quaternion(min_distance_time_ts, earth, moon, sat)
     
 if __name__ == '__main__':
     main()
