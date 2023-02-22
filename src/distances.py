@@ -61,26 +61,3 @@ def get_minimum_distance(t_start, t_end, obj, target, observer=earth, tolerance=
     min_t = min_t.utc_datetime()
     
     return min_d, min_t
-
-def get_positions_at(t_start, t_end, obj, tolerance):
-    positions = []
-    iter = 0
-    while t_start.tt + tolerance*iter < t_end.tt:
-        iter +=1
-        t = t_start + tolerance*iter
-        position = obj.at(t).position.km
-        positions.append(position)
-        
-    return positions
-
-def get_positions_obs(t_start, t_end, obj, tolerance, observer=earth):
-    positions = []
-    iter = 0
-    while t_start.tt + tolerance*iter < t_end.tt:
-        iter +=1
-        t = t_start + tolerance*iter
-        position = observer.at(t).observe(obj).position.km
-        positions.append(position)
-        
-    return positions
-
