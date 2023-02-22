@@ -1,20 +1,8 @@
 import numpy as np
 import scipy
 from logger import logger as log
+from celestial_bodies import get_positions, get_velocity
 import math
-
-def get_positions(earth, time, target, object):
-    target_position = earth.at(time).observe(target).position.km
-    obj_position = object.at(time).position.km
-    
-    positions = [obj_position, target_position]
-
-    return positions
-
-def get_velocity(time,  object):
-    obj_velocity = object.at(time).velocity.km_per_s
-    
-    return obj_velocity
 
 def eci2LVLH(r_i, v_i):
     z_o = -r_i / np.linalg.norm(r_i)
@@ -66,7 +54,7 @@ def rot2q(R):
     return q
 
 def get_quaternion(time, earth, target, sat):
-    sat_pos, target_pos = get_positions(earth, time, target, sat)
+    sat_pos, target_pos = get_positions(time, target, sat, earth)
     sat_vel = get_velocity(time, sat)
     log.info('sat_pos: {}'.format(sat_pos))
     log.info('sat_vel: {}'.format(sat_vel))

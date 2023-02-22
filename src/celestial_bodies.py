@@ -6,6 +6,7 @@ import json
 tle_path = 'src/data/tle_files/tle-CATNR-'
 config_path = 'src/data/config/config.json'
 tle_url = 'http://celestrak.org/NORAD/elements/gp.php?CATNR='
+
 def get_satellite(config, force_update=False):
     catnr = config['catnr']
 
@@ -64,3 +65,16 @@ def get_target(target):
     else:
         log.error('Target not supported. Exiting.')
         return
+
+def get_positions(time, target, object, observer):
+    target_position = observer.at(time).observe(target).position.km
+    obj_position = object.at(time).position.km
+    
+    positions = [obj_position, target_position]
+
+    return positions
+
+def get_velocity(time,  object):
+    obj_velocity = object.at(time).velocity.km_per_s
+    
+    return obj_velocity

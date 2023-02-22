@@ -1,7 +1,7 @@
 from config_reader import read_config
 from celestial_bodies import *
 from distances import *
-from satellite_orientation import get_quaternion
+from quaternions import get_quaternion
 from logger import logger as log
 from skyfield.api import load
 from datetime import timedelta
