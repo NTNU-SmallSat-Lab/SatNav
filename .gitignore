@@ -1,14 +1,9 @@
 # Ignore the contents of the config.json file
-/src/data/config/config.json
-
-# Allow the defaults subdirectory of the config directory
-!/src/data/config/defaults/
+src/data/config/config.json
 
 # Ignore all files in the tle_files directory
-/src/tle_files/*
-
-# Allow the tle_files directory itself
-!/src/tle_files/
+src/data/tle_files/*
+!src/data/tle_files/.gitkeep
 
 # Ignore the de421.bsp file
 /de421.bsp
