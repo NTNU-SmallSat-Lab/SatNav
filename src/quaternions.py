@@ -83,3 +83,26 @@ def get_quaternion(time, earth, target, sat):
     # log.debug('off_nadir_angle: {}'.format(off_nadir_angle))
 
     return q_ob
+
+def get_off_nadir_angle(time, earth, target, sat):
+    sat_pos, target_pos = get_positions(time, target, sat, earth)
+    sat_vel = get_velocity(time, sat)
+    log.debug('sat_pos: {}'.format(sat_pos))
+    log.debug('sat_vel: {}'.format(sat_vel))
+
+    [r_o, v_o, R_io] = eci2LVLH(sat_pos, sat_vel)
+
+    target_pos_eci = target_pos
+
+    relative_pos = target_pos_eci - sat_pos
+    relative_pos_orbit = np.dot(R_io, relative_pos)
+
+    target_unit_vector = relative_pos_orbit / np.linalg.norm(relative_pos_orbit)
+    
+    # Calculate the nadir vector in the orbit frame
+    z_o_hat_o = np.array([0, 0, 1])
+
+    cos_off_nadir_angle = np.dot(target_unit_vector, z_o_hat_o)
+    off_nadir_angle = math.degrees(np.arccos(cos_off_nadir_angle))
+
+    return off_nadir_angle

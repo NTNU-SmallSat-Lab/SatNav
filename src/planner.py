@@ -1,5 +1,5 @@
 from distances import get_minimum_distance
-from quaternions import get_quaternion
+from quaternions import get_quaternion, get_off_nadir_angle
 from logger import logger as log
 
 def planner(t_start, t_end, sat, target, observer, intervals, tol, ts):
@@ -33,8 +33,9 @@ def planner(t_start, t_end, sat, target, observer, intervals, tol, ts):
         _, min_distance_time_datetime = get_minimum_distance(new_t_start, new_t_end, sat, target, observer, tolerance=tol)
         min_distance_time_ts = ts.from_datetime(min_distance_time_datetime)
         quaternion = get_quaternion(min_distance_time_ts, observer, target, sat)
+        off_nadir_angle = get_off_nadir_angle(min_distance_time_ts, observer, target, sat)
         
         # Store the results for the current time frame
-        results.append((min_distance_time_datetime, quaternion))
+        results.append((min_distance_time_datetime, quaternion, off_nadir_angle))
         
     return results

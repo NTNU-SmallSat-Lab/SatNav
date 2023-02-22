@@ -36,23 +36,24 @@ def multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts):
     
     log.info('----------------------------------------------------')
     count = 1
-    for time, quaternion in plan:
+    for time, quaternion, off_nadir in plan:
         log.info('Capture nr. {}'.format(count))
         log.info('Time = {}'.format(time))
         log.info('Qx = {:.10f}'.format(quaternion[1]))
         log.info('Qy = {:.10f}'.format(quaternion[2]))
         log.info('Qz = {:.10f}'.format(quaternion[3]))
         log.info('Qs = {:.10f}\n'.format(quaternion[0]))
+        log.info('Off-nadir angle = {:.10f} degrees')
         count += 1
     
     log.info('----------------------------------------------------')
     
     # Save plan to txt file
     with open('plan.txt', 'w') as f:
-        f.write('Capture nr. | Time | Qx | Qy | Qz | Qs\n')
+        f.write('Capture nr. | Time | Qx | Qy | Qz | Qs | Off-nadir angle\n')
         count = 1
-        for time, quaternion in plan:
-            f.write('{} | {} | {:.10f} | {:.10f} | {:.10f} | {:.10f}\n'.format(count, time, quaternion[1], quaternion[2], quaternion[3], quaternion[0]))
+        for time, quaternion, off_nadir in plan:
+            f.write('{} | {} | {:.10f} | {:.10f} | {:.10f} | {:.10f} | {:.10f}\n'.format(count, time, quaternion[1], quaternion[2], quaternion[3], quaternion[0], off_nadir))
             count += 1
     
 if __name__ == '__main__':
