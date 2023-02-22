@@ -56,8 +56,8 @@ def rot2q(R):
 def get_quaternion(time, earth, target, sat):
     sat_pos, target_pos = get_positions(time, target, sat, earth)
     sat_vel = get_velocity(time, sat)
-    log.info('sat_pos: {}'.format(sat_pos))
-    log.info('sat_vel: {}'.format(sat_vel))
+    log.debug('sat_pos: {}'.format(sat_pos))
+    log.debug('sat_vel: {}'.format(sat_vel))
 
     [r_o, v_o, R_io] = eci2LVLH(sat_pos, sat_vel)
 
@@ -79,15 +79,7 @@ def get_quaternion(time, earth, target, sat):
     R_bo = rot_rodrigues(z_o_hat_o, z_b_hat_o, np.radians(off_nadir_angle))
     R_ob = R_bo.T
     q_ob = rot2q(R_ob)
-
-    log.info('----------------------------------------------------')
-    log.info('Time = {}'.format(time.utc_iso()))
-    log.info('Qx = {:.10f}'.format(q_ob[1]))
-    log.info('Qy = {:.10f}'.format(q_ob[2]))
-    log.info('Qz = {:.10f}'.format(q_ob[3]))
-    log.info('Qs = {:.10f}'.format(q_ob[0]))
-    log.info('----------------------------------------------------')
-
-    log.info('HSI Off-Nadir Pointing Angle: {}'.format(off_nadir_angle))
+    
+    # log.debug('off_nadir_angle: {}'.format(off_nadir_angle))
 
     return q_ob

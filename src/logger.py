@@ -32,3 +32,7 @@ ch.setLevel(logging.DEBUG)
 ch.setFormatter(CustomFormatter())
 
 logger.addHandler(ch)
+
+def set_log_level(level):
+    logger.setLevel(level)
+    ch.setLevel(level)

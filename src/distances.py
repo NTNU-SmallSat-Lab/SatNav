@@ -2,10 +2,7 @@ import numpy as np
 from skyfield.api import load, wgs84
 from logger import logger as log
 
-planets = load('de421.bsp')
-earth = planets['earth']
-
-def distance_obj_to_target(t, obj, target, observer=earth):
+def distance_obj_to_target(t, obj, target, observer):
     """
     Compute the linear distance between an orbiting object and a target at time t.
     
@@ -19,13 +16,13 @@ def distance_obj_to_target(t, obj, target, observer=earth):
         float, distance in km
     """
     
-    target_position = earth.at(t).observe(target).position.km
+    target_position = observer.at(t).observe(target).position.km
 
     obj_position = obj.at(t).position.km
     
     return np.linalg.norm(target_position - obj_position)
 
-def get_minimum_distance(t_start, t_end, obj, target, observer=earth, tolerance=1/86400):
+def get_minimum_distance(t_start, t_end, obj, target, observer, tolerance=1/86400):
     """
     Find the time when the distance between an object and a target is minimum within a timeframe.
     
@@ -45,7 +42,7 @@ def get_minimum_distance(t_start, t_end, obj, target, observer=earth, tolerance=
     min_t = t_start
     iter = 0
     
-    log.info('Looking for minimum distance between {} and {} from {} to {} with tolerance {}.'.format(obj.name, target, t_start.tt_strftime('%Y-%m-%d %H:%M:%S'), t_end.tt_strftime('%Y-%m-%d %H:%M:%S'), tolerance))
+    log.debug('Looking for minimum distance between {} and {} from {} to {} with tolerance {}.'.format(obj.name, target, t_start.tt_strftime('%Y-%m-%d %H:%M:%S'), t_end.tt_strftime('%Y-%m-%d %H:%M:%S'), tolerance))
     while t_start.tt + tolerance*iter < t_end.tt:
         progress = round(iter/(1/tolerance)*100)
         print('Completed ', progress, "%", end='\r')
@@ -57,7 +54,7 @@ def get_minimum_distance(t_start, t_end, obj, target, observer=earth, tolerance=
             min_t = t
             min_d = d
             
-    log.info('Minimum distance found at {} with distance {} km.'.format(min_t.utc_datetime(), min_d))
+    log.debug('Minimum distance found at {} with distance {} km.'.format(min_t.utc_datetime(), min_d))
     min_t = min_t.utc_datetime()
     
     return min_d, min_t

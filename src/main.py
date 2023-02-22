@@ -3,6 +3,8 @@ from celestial_bodies import *
 from distances import *
 from quaternions import get_quaternion
 from logger import logger as log
+from logger import set_log_level
+from planner import planner
 from skyfield.api import load
 from datetime import timedelta
 from pyfiglet import Figlet
@@ -10,25 +12,73 @@ import json
 
 config_path = 'src/data/config/config.json'
 
-def main():
+planets = load('de421.bsp')
+earth = planets['earth']
+
+def single_planner(t_start, t_end, sat, target, observer, tol, ts):
+    log.info('Single planner')
+    _, min_distance_time_datetime = get_minimum_distance(t_start, t_end, sat, target, observer, tol) 
+    min_distance_time_ts = ts.from_datetime(min_distance_time_datetime)
+
+    q_ob = get_quaternion(min_distance_time_ts, earth, target, sat)
+    
+    log.info('----------------------------------------------------')
+    log.info('Time = {}'.format(min_distance_time_ts.utc_iso()))
+    log.info('Qx = {:.10f}'.format(q_ob[1]))
+    log.info('Qy = {:.10f}'.format(q_ob[2]))
+    log.info('Qz = {:.10f}'.format(q_ob[3]))
+    log.info('Qs = {:.10f}'.format(q_ob[0]))
+    log.info('----------------------------------------------------')
+    
+def multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts):
+    log.info('Multi planner')
+    plan = planner(t_start, t_end, sat, target, earth, intervals, tol, ts)
+    
+    log.info('----------------------------------------------------')
+    count = 1
+    for time, quaternion in plan:
+        log.info('Capture nr. {}'.format(count))
+        log.info('Time = {}'.format(time))
+        log.info('Qx = {:.10f}'.format(quaternion[1]))
+        log.info('Qy = {:.10f}'.format(quaternion[2]))
+        log.info('Qz = {:.10f}'.format(quaternion[3]))
+        log.info('Qs = {:.10f}\n'.format(quaternion[0]))
+        count += 1
+    
+    log.info('----------------------------------------------------')
+    
+    # Save plan to txt file
+    with open('plan.txt', 'w') as f:
+        f.write('Capture nr. | Time | Qx | Qy | Qz | Qs\n')
+        count = 1
+        for time, quaternion in plan:
+            f.write('{} | {} | {:.10f} | {:.10f} | {:.10f} | {:.10f}\n'.format(count, time, quaternion[1], quaternion[2], quaternion[3], quaternion[0]))
+            count += 1
+    
+if __name__ == '__main__':
     ts = load.timescale()
     t_now = ts.now()
     
     config = read_config(config_path)
     if not config:
         log.error('Error reading config file. Exiting.')
-        return   
+        exit
+        
+    set_log_level(config['log_level'])
     
     f = Figlet(font='slant')
     print(f.renderText('SatNav'))
-    
     print('\033[34m' + '\033[1m' + '--------Satellite Targeting Tool--------\n' + '\033[0m', end='')
     print('Enter the following information to configure the tool. Press enter to use default value.\n', end='')
     
+    mode = input('Enter ' + '\033[34m' + '1' + '\033[0m' + ' to run in single planner mode, or ' + '\033[34m' + '2' + '\033[0m' + ' to run in multi planner mode (default is ' + '\033[34m' + '1' + '\033[0m' + '): ') or '1'
     config['catnr'] = int(input('Enter satellite catalog number (default is ' + '\033[34m' + '51053' + '\033[0m' + ' (HYPSO-1)): ') or 51053)
     target = int(input('Enter target segment number (default is ' + '\033[34m' + '301' + '\033[0m' + ' (the moon). See README for supported bodies): ') or 301)
     start_time_delta = float(input('Enter hours in the future for start time of search (default is ' + '\033[34m' + '0' + '\033[0m' + ' (now)): ') or 0)
     end_time_delta = float(input('Enter hours in the future for end time of search (default is ' + '\033[34m' + '24' + '\033[0m' + ' (1 day from now)): ') or 24)
+    if mode == '2':
+        intervals = int(input('Enter number of intervals to search (default is ' + '\033[34m' + 'end_time_delta/24' + '\033[0m' + ' (one capture per day)): ') or round(end_time_delta/24))
+    
     tol = float(input('Enter tolerance for minimum distance search (default is + ' + '\033[34m' + '1/24/60' + '\033[0m' + '(1 minute)): ') or 1/24/60)
     force = input('Enter ' + '\033[34m' + 'true' + '\033[0m' + ' to force update TLE data, or press Enter to skip: ').lower() == 'true'
     
@@ -43,11 +93,8 @@ def main():
     target = get_target(target)
     log.info('Config: ' + json.dumps(config, indent=4))
     log.info('Epoch: ' + str(sat))
-
-    _, min_distance_time_datetime = get_minimum_distance(t_start, t_end, sat, target, tolerance=tol)
-    min_distance_time_ts = ts.from_datetime(min_distance_time_datetime)
-
-    get_quaternion(min_distance_time_ts, earth, target, sat)
     
-if __name__ == '__main__':
-    main()
+    if mode == '1':
+        single_planner(t_start, t_end, sat, target, earth, tol, ts)
+    elif mode == '2':
+        multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts)

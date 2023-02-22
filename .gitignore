@@ -8,6 +8,9 @@ src/data/tle_files/*
 # Ignore the de421.bsp file
 /de421.bsp
 
+# Ignore plan.txt
+/plan.txt
+
 # From here on out is default python .gitignore file
 # Byte-compiled / optimized / DLL files
 __pycache__/
