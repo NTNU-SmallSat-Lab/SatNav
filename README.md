@@ -37,6 +37,13 @@ TLE files are required to calculate the satellites's position and velocity. Thes
 
 The program will calculate the precise UTC time when the satellite is closest to the target and generate the quaternion to point the satellite's sensors. These are printed to the console.
 
+## Supported Celestial Bodies
+* 301 -> MOON
+* 399 -> EARTH 
+* 199 -> MERCURY
+* 299 -> VENUS
+* 499 -> MARS
+
 ## Known Issues
 
 * The program currently only supports the Moon as a target. Support for other targets will be added in the future.

@@ -31,11 +31,16 @@ def rot_rodrigues(a, b, theta):
     a_hat = a/np.linalg.norm(a)
     b_hat = b/np.linalg.norm(b)
     lmbda = np.cross(a_hat, b_hat)
-    lmbda_hat = lmbda/np.linalg.norm(lmbda)
+    lmbda_norm = np.linalg.norm(lmbda)
+    if lmbda_norm < 1e-12:
+        lmbda_hat = lmbda
+    else:
+        lmbda_hat = lmbda/lmbda_norm
     skew = skew_sym(theta*lmbda_hat)
     R = scipy.linalg.expm(skew)
-    
+
     return R
+
         
 def skew_sym(x):
     S = [[0, -x[2], x[1]],
@@ -46,8 +51,11 @@ def skew_sym(x):
     
 def rot2q(R):
     theta = np.arccos((np.trace(R)-1)/2)
-    e_hat = 1/(2*np.sin(theta))*np.array([R[1,2]-R[2,1], R[2,0]-R[0,2], R[0,1]-R[1,0]])
-    
+    if np.isclose(theta, 0):
+        e_hat = np.array([0, 0, 0])
+    else:
+        e_hat = 1/(2*np.sin(theta))*np.array([R[1,2]-R[2,1], R[2,0]-R[0,2], R[0,1]-R[1,0]])
+
     q_0 = np.cos(theta/2)
     q_1 = e_hat[0]*np.sin(theta/2)
     q_2 = e_hat[1]*np.sin(theta/2)

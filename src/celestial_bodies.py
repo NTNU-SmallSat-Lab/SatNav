@@ -53,4 +53,14 @@ def get_satellite(config, force_update=False):
     with open(config_path, 'w') as f:
         json.dump(config, f)
         
-    return sat
+    return sat 
+
+def get_target(target):
+    print(target)
+    planets = load('de421.bsp')
+    target = planets[target]
+    if target is not None:
+        return target
+    else:
+        log.error('Target not supported. Exiting.')
+        return
