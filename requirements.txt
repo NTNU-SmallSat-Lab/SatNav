@@ -3,3 +3,4 @@ numpy
 scipy
 config_reader
 argparse
+pyfiglet
