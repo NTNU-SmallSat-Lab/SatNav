@@ -46,8 +46,6 @@ The program will calculate the precise UTC time when the satellite is closest to
 
 ## Known Issues
 
-* The program currently only supports the Moon as a target. Support for other targets will be added in the future.
-
 * There is no check to ensure that the target is not obscured by the Earth. This should not happen as it then clearly is not in it's closes point in orbit, but can happen if the tolerance parameter is too low. This check will be added in the future.
 
 * The program is under development, and unknown bugs are to be expected.
