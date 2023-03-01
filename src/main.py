@@ -4,7 +4,7 @@ from distances import *
 from quaternions import get_quaternion
 from logger import logger as log
 from logger import set_log_level
-from planner import planner
+import planner
 from skyfield.api import load
 from datetime import timedelta
 from pyfiglet import Figlet
@@ -17,22 +17,20 @@ earth = planets['earth']
 
 def single_planner(t_start, t_end, sat, target, observer, tol, ts):
     log.info('Single planner')
-    _, min_distance_time_datetime = get_minimum_distance(t_start, t_end, sat, target, observer, tol) 
-    min_distance_time_ts = ts.from_datetime(min_distance_time_datetime)
-
-    q_ob = get_quaternion(min_distance_time_ts, earth, target, sat)
+    min_distance_time_ts, q_ob, off_nadir = planner.single_planner(t_start, t_end, sat, target, observer, tol, ts)
     
     log.info('----------------------------------------------------')
-    log.info('Time = {}'.format(min_distance_time_ts.utc_iso()))
+    log.info('Time = {}'.format(min_distance_time_ts))
     log.info('Qx = {:.10f}'.format(q_ob[1]))
     log.info('Qy = {:.10f}'.format(q_ob[2]))
     log.info('Qz = {:.10f}'.format(q_ob[3]))
     log.info('Qs = {:.10f}'.format(q_ob[0]))
+    log.info('Off-nadir angle = {:.10f} degrees'.format(off_nadir))
     log.info('----------------------------------------------------')
     
 def multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts):
     log.info('Multi planner')
-    plan = planner(t_start, t_end, sat, target, earth, intervals, tol, ts)
+    plan = planner.multi_planner(t_start, t_end, sat, target, earth, intervals, tol, ts)
     
     log.info('----------------------------------------------------')
     count = 1

@@ -45,7 +45,7 @@ def get_minimum_distance(t_start, t_end, obj, target, observer, tolerance=1/8640
     log.debug('Looking for minimum distance between {} and {} from {} to {} with tolerance {}.'.format(obj.name, target, t_start.tt_strftime('%Y-%m-%d %H:%M:%S'), t_end.tt_strftime('%Y-%m-%d %H:%M:%S'), tolerance))
     while t_start.tt + tolerance*iter < t_end.tt:
         progress = round(iter/(1/tolerance)*100)
-        print('Completed ', progress, "%", end='\r')
+        # print('Completed ', progress, "%", end='\r')
         
         iter += 1
         t = t_start + tolerance*iter
