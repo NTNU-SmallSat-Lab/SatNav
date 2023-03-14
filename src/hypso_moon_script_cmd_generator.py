@@ -120,9 +120,9 @@ def create_script_generator_cmd(capture, buff_file=38, append=True):
     
     # Add the datetime and off-nadir angle to the command after %
     if append:
-        cmd = f'-b {buff_file} -u {capture_start} -s -a -p non-binned -n moon -d -e 40.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -frames {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}'
+        cmd = f'-b {buff_file} -u {capture_start} -s -a -p non-binned -n moon -d -e 40.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -fr {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}'
     else:
-        cmd = f'-b {buff_file} -u {capture_start} -s -p non-binned -n moon -d -e 40.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -frames {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}'
+        cmd = f'-b {buff_file} -u {capture_start} -s -p non-binned -n moon -d -e 40.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -fr {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}'
 
     return cmd
 
@@ -156,14 +156,20 @@ def get_script_generator_cmds(start_time_delta, end_time_delta, intervals, time_
         cmd = create_script_generator_cmd(plans[key], append=append)
         print(cmd)
 
+default_start_delta = 0
+default_end_delta = 24
+default_time_interval = 1/24/60
+default_buff = 38
+default_append = False
+
 # Add the command line arguments
 parser = argparse.ArgumentParser(description='Generate the script generator commands for moon captures.')
-parser.add_argument('-s', '--start', type=int, default=0, help='The start time delta in hours. Default is 0.')
-parser.add_argument('-e', '--end', type=int, default=24, help='The end time delta in hours. Default is 24.')
+parser.add_argument('-s', '--start', type=int, default=0, help=(f'The start time delta in hours. Default is {default_start_delta}.'))
+parser.add_argument('-e', '--end', type=int, default=24, help=(f'The end time delta in hours. Default is {default_end_delta}.'))
 parser.add_argument('-i', '--intervals', type=int, default=None, help='The number of intervals to use. Default is (-e - -s)/24 (one capture per day).')
-parser.add_argument('-t', '--time_interval', type=float, default=1/24/60, help='The time interval to use when searching. Default is 1/24/60 (every minute).')
-parser.add_argument('-b', '--buff', type=int, default=38, help='The buff file to use. Defualt is 38.')
-parser.add_argument('-a', '--append', type=bool, default=False, help='Set to true if you plan multiple captures. Default is False.')
+parser.add_argument('-t', '--time_interval', type=float, default=default_time_interval, help=(f'The time interval to use when searching. Default is {default_time_interval} (1/24/60, i.e. every minute).'))
+parser.add_argument('-b', '--buff', type=int, default=default_buff, help=(f'The buff file to use. Defualt is {default_buff}.'))
+parser.add_argument('-a', '--append', type=bool, default=default_append, help=(f'Set to true if you plan multiple captures. Default is {default_append}.'))
 
 # Parse the command line arguments
 args = parser.parse_args()
