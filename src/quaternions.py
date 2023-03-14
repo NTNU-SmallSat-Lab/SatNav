@@ -1,5 +1,5 @@
 import numpy as np
-import scipy
+import scipy.linalg
 from logger import logger as log
 from celestial_bodies import get_positions, get_velocity
 import math

@@ -40,11 +40,13 @@ def get_minimum_distance(t_start, t_end, obj, target, observer, tolerance=1/8640
     """
     min_d = distance_obj_to_target(t_start, obj, target, observer)
     min_t = t_start
+    total_iterations = (t_end.tt - t_start.tt) / tolerance
     iter = 0
     
     log.debug('Looking for minimum distance between {} and {} from {} to {} with tolerance {}.'.format(obj.name, target, t_start.tt_strftime('%Y-%m-%d %H:%M:%S'), t_end.tt_strftime('%Y-%m-%d %H:%M:%S'), tolerance))
     while t_start.tt + tolerance*iter < t_end.tt:
-        progress = round(iter/(1/tolerance)*100)
+        progress = iter / total_iterations * 100
+        print(f"Progress: {progress:.1f}%", end='\r')
         # print('Completed ', progress, "%", end='\r')
         
         iter += 1

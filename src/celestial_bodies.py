@@ -56,6 +56,17 @@ def get_satellite(config, force_update=False):
         
     return sat 
 
+def get_satellite_from_catnr(catnr, tle_url, save=True):
+    url = tle_url + str(catnr)
+    if save:
+        filename = tle_path + str(catnr) + '.txt'
+        satellites = load.tle_file(url, filename=filename, reload=True)
+    else:
+        satellites = load.tle_file(url)
+    sat = satellites[0]
+    
+    return sat
+
 def get_target(target):
     print(target)
     planets = load('de421.bsp')

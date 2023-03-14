@@ -1,5 +1,6 @@
 from distances import get_minimum_distance
 from quaternions import get_quaternion, get_off_nadir_angle
+
 from logger import logger as log
 
 def multi_planner(t_start, t_end, sat, target, observer, intervals, tol, ts):
@@ -24,7 +25,7 @@ def multi_planner(t_start, t_end, sat, target, observer, intervals, tol, ts):
     results = []
     for i in range(intervals):
         # log.info('Completed {}%'.format(round(i / intervals * 100, 2)))
-        print('Completed ', i, '/', intervals, end='\r')
+        log.info(f'Completed {i}/{intervals}')
         # Calculate the start and end times for the current time frame
         new_t_start = t_start + i * duration
         new_t_end = new_t_start + duration
