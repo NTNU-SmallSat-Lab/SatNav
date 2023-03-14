@@ -14,6 +14,13 @@ Then navigate to the root directory of the project and install the required depe
 
 ## Usage
 
+### HYPSO-1 specific planning:
+To plan for a capture of the Moon by HYPSO-1, run `python3 src/hypso_moon_script_cmd_generator.py`. 
+For help on the script, run `python3 src/hypso_moon_script_cmd_generator.py -h`.
+This script creates the necessary commands to create FC- and PC-scripts through NTNU-SmallSat_Lab's script generator, see https://github.com/NTNU-SmallSat-Lab/flight-scripts/tree/main/script_generator for more information.
+
+### General usage:
+
 To run the program, run `python3 src/main.py`.
 
 The program will ask for the following parameters, empty inputs will use the default values:
