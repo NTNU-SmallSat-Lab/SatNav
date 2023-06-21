@@ -1,6 +1,7 @@
 import argparse
 from celestial_bodies import get_satellite_from_catnr, get_target
 from datetime import timedelta
+from distances import distance_obj_to_target
 import numpy as np
 import math
 from logger import logger as log
@@ -11,7 +12,7 @@ from skyfield.api import load
 
 set_log_level('INFO')
 
-def plan_hypso_moon_capture(t_start_delta=0, t_end_delta=72, intervals=3, time_interval=1e-3):
+def plan_hypso_moon_capture(t_start_delta=0, t_end_delta=72, intervals=3, search_interval=1):
     """
     Calculates the minimum distance between the satellite and target for a given time frame and
     the corresponding quaternion for each time frame.
@@ -19,7 +20,7 @@ def plan_hypso_moon_capture(t_start_delta=0, t_end_delta=72, intervals=3, time_i
     :param t_start_delta: The start time of the time frame.
     :param t_end_delta: The end time of the time frame.
     :param intervals: The number of intervals to split the time frame into.
-    :param tol: The time_interval for the minimum distance calculation.
+    :param search_interval: The search_interval for the minimum distance calculation.
     :return: A list of tuples containing the minimum distance time and corresponding quaternion for
              each time frame.
     """
@@ -28,15 +29,17 @@ def plan_hypso_moon_capture(t_start_delta=0, t_end_delta=72, intervals=3, time_i
     t_now = ts.now()
 
     tle_url = 'http://celestrak.org/NORAD/elements/gp.php?CATNR='
-    sat = get_satellite_from_catnr(51053, tle_url, False)
+    sat = get_satellite_from_catnr(51053, tle_url, True)
     target = get_target(301)
     planets = load('de421.bsp')
     earth = planets['earth']
+    moon = planets['moon']
+    sun = planets['sun']
     
     t_start = t_now + timedelta(hours=t_start_delta)
     t_end = t_now + timedelta(hours=t_end_delta)
     
-    results = multi_planner(t_start, t_end, sat, target, earth, intervals, time_interval, ts)
+    results = multi_planner(t_start, t_end, sat, target, earth, intervals, search_interval, ts)
 
     results_dict = {}
     for i, result in enumerate(results):
@@ -47,7 +50,11 @@ def plan_hypso_moon_capture(t_start_delta=0, t_end_delta=72, intervals=3, time_i
         total_time = calculate_total_capture_time(off_nadir_angle)
         # capture_time_start = calculate_capture_start_time(capture_time, total_time)
         frames, fps = calculate_frames(total_time)
-        results_dict[f'capture_{i+1}'] = {'datetime_center': capture_time_utc, 'capture_start': capture_start, 'qs (r)': quaternions[0], 'qx (l)': quaternions[1], 'qy (j)': quaternions[2], 'qz (k)': quaternions[3], 'fps': fps, 'frames': frames, 'total_time': total_time, 'off_nadir_angle': off_nadir_angle}
+        t_start = ts.utc(capture_time_utc) 
+        d_sun_moon = round(distance_obj_to_target(t_start, sun, moon, sun))
+        d_sat_moon = round(distance_obj_to_target(t_start, sat, moon, earth))
+        
+        results_dict[f'capture_{i+1}'] = {'datetime_center': capture_time_utc, 'capture_start': capture_start, 'qs (r)': quaternions[0], 'qx (l)': quaternions[1], 'qy (j)': quaternions[2], 'qz (k)': quaternions[3], 'fps': fps, 'frames': frames, 'total_time': total_time, 'off_nadir_angle': off_nadir_angle, 'd_sun_moon': d_sun_moon, 'd_sat_moon': d_sat_moon}
 
     return results_dict
     
@@ -96,7 +103,7 @@ def calculate_frames(total_time):
 
     return num_frames, required_fps
 
-def create_script_generator_cmd(capture, buff_file=38, append=True):
+def create_script_generator_cmd(capture, buff_file=33, append=True):
     """ 
     Creates the command to run the script generator.
      
@@ -118,34 +125,40 @@ def create_script_generator_cmd(capture, buff_file=38, append=True):
     fps = math.floor(capture['fps'])
     frames = capture['frames']
     
+    # Adjust fps
+    fps = fps/2
+    fps = math.ceil(fps)
+    
     # Add the datetime and off-nadir angle to the command after %
     if append:
-        cmd = f'-b {buff_file} -u {capture_start} -s -a -p non-binned -n moon -d -e 40.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -fr {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}'
+        # cmd = f'-b {buff_file} -u {capture_start} -s -a -p nonbinned -n moon -d -e 50.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -fr {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}, d_sun_moon: {capture["d_sun_moon"]} km, d_sat_moon: {capture["d_sat_moon"]} km'
+        cmd = f'-b {buff_file} -u {capture_start} -s -a -p nonbinned -n moon -d -e 50.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}, d_sun_moon: {capture["d_sun_moon"]} km, d_sat_moon: {capture["d_sat_moon"]} km'
     else:
-        cmd = f'-b {buff_file} -u {capture_start} -s -p non-binned -n moon -d -e 40.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -fr {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}'
+        # cmd = f'-b {buff_file} -u {capture_start} -s -p nonbinned -n moon -d -e 50.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} -fr {frames} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}, d_sun_moon: {capture["d_sun_moon"]} km, d_sat_moon: {capture["d_sat_moon"]} km'
+        cmd = f'-b {buff_file} -u {capture_start} -s -a -p nonbinned -n moon -d -e 50.0 -r {r} -l {l} -j {j} -k {k} -fps {fps} % {capture["datetime_center"]}, off-nadir: {capture["off_nadir_angle"]}, d_sun_moon: {capture["d_sun_moon"]} km, d_sat_moon: {capture["d_sat_moon"]} km'
 
     return cmd
 
-def get_script_generator_cmds(start_time_delta, end_time_delta, intervals, time_interval, buff_file, append):
+def get_script_generator_cmds(start_time_delta, end_time_delta, intervals, search_interval, buff_file, append):
     t_now = load.timescale().now()
     t_start = t_now + timedelta(hours=start_time_delta)
     t_end = t_now + timedelta(hours=end_time_delta)
     log.info('Using start time: {} UTC'.format(t_start.tt_strftime('%Y-%m-%d %H:%M:%S')))
     log.info('Using end time: {} UTC'.format(t_end.tt_strftime('%Y-%m-%d %H:%M:%S')))
-    log.info('Using {} intervals with {} seconds between each search'.format(intervals, round(time_interval*24*60*60)))
+    log.info('Using {} intervals with {} seconds between each search'.format(intervals, round(search_interval*60)))
 
-    plans = plan_hypso_moon_capture(start_time_delta, end_time_delta, intervals=intervals, time_interval=time_interval)
+    plans = plan_hypso_moon_capture(start_time_delta, end_time_delta, intervals=intervals, search_interval=search_interval)
 
-    log.info('Generated the following plans:')
-    for key in plans:
-        log.info('Capture {}:'.format(key))
-        log.info('\tCapture time utc: {}'.format(plans[key]['datetime_center']))
-        log.info('\tCapture time unix: {}'.format(plans[key]['capture_start']))
-        log.info('\tOff-nadir angle: {}'.format(plans[key]['off_nadir_angle']))
-        log.info('\tTotal capture time: {}'.format(plans[key]['total_time']))
-        log.info('\tFrames: {}'.format(plans[key]['frames']))
-        log.info('\tFPS: {}'.format(plans[key]['fps']))
-        log.info('')
+    # log.info('Generated the following plans:')
+    # for key in plans:
+    #     log.info('Capture {}:'.format(key))
+    #     log.info('\tCapture time utc: {}'.format(plans[key]['datetime_center']))
+    #     log.info('\tCapture time unix: {}'.format(plans[key]['capture_start']))
+    #     log.info('\tOff-nadir angle: {}'.format(plans[key]['off_nadir_angle']))
+    #     log.info('\tTotal capture time: {}'.format(plans[key]['total_time']))
+    #     log.info('\tFrames: {}'.format(plans[key]['frames']))
+    #     log.info('\tFPS: {}'.format(plans[key]['fps']))
+    #     log.info('')
     
     append = True
     if len(plans) <= 1:
@@ -158,8 +171,8 @@ def get_script_generator_cmds(start_time_delta, end_time_delta, intervals, time_
 
 default_start_delta = 0
 default_end_delta = 24
-default_time_interval = 1/24/60
-default_buff = 38
+default_search_interval = 1
+default_buff = 33
 default_append = False
 
 # Add the command line arguments
@@ -167,7 +180,7 @@ parser = argparse.ArgumentParser(description='Generate the script generator comm
 parser.add_argument('-s', '--start', type=int, default=0, help=(f'The start time delta in hours. Default is {default_start_delta}.'))
 parser.add_argument('-e', '--end', type=int, default=24, help=(f'The end time delta in hours. Default is {default_end_delta}.'))
 parser.add_argument('-i', '--intervals', type=int, default=None, help='The number of intervals to use. Default is (-e - -s)/24 (one capture per day).')
-parser.add_argument('-t', '--time_interval', type=float, default=default_time_interval, help=(f'The time interval to use when searching. Default is {default_time_interval} (1/24/60, i.e. every minute).'))
+parser.add_argument('-t', '--time_interval', type=float, default=default_search_interval, help=(f'The time interval to use when searching. Default is {default_search_interval} (1, i.e. every minute).'))
 parser.add_argument('-b', '--buff', type=int, default=default_buff, help=(f'The buff file to use. Defualt is {default_buff}.'))
 parser.add_argument('-a', '--append', type=bool, default=default_append, help=(f'Set to true if you plan multiple captures. Default is {default_append}.'))
 

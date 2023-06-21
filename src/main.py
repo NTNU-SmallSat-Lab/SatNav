@@ -15,9 +15,9 @@ config_path = 'src/data/config/config.json'
 planets = load('de421.bsp')
 earth = planets['earth']
 
-def single_planner(t_start, t_end, sat, target, observer, tol, ts):
+def single_planner(t_start, t_end, sat, target, observer, search_interval, ts):
     log.info('Single planner')
-    min_distance_time_ts, q_ob, off_nadir = planner.single_planner(t_start, t_end, sat, target, observer, tol, ts)
+    min_distance_time_ts, q_ob, off_nadir = planner.single_planner(t_start, t_end, sat, target, observer, search_interval, ts)
     
     log.info('----------------------------------------------------')
     log.info('Time = {}'.format(min_distance_time_ts))
@@ -28,9 +28,9 @@ def single_planner(t_start, t_end, sat, target, observer, tol, ts):
     log.info('Off-nadir angle = {:.10f} degrees'.format(off_nadir))
     log.info('----------------------------------------------------')
     
-def multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts):
+def multi_planner(t_start, t_end, sat, target, intervals, earth, search_interval, ts):
     log.info('Multi planner')
-    plan = planner.multi_planner(t_start, t_end, sat, target, earth, intervals, tol, ts)
+    plan = planner.multi_planner(t_start, t_end, sat, target, earth, intervals, search_interval, ts)
     
     log.info('----------------------------------------------------')
     count = 1
@@ -40,8 +40,8 @@ def multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts):
         log.info('Qx = {:.10f}'.format(quaternion[1]))
         log.info('Qy = {:.10f}'.format(quaternion[2]))
         log.info('Qz = {:.10f}'.format(quaternion[3]))
-        log.info('Qs = {:.10f}\n'.format(quaternion[0]))
-        log.info('Off-nadir angle = {:.10f} degrees'.format(off_nadir))
+        log.info('Qs = {:.10f}'.format(quaternion[0]))
+        log.info('Off-nadir angle = {:.10f} degrees\n'.format(off_nadir))
         count += 1
     
     log.info('----------------------------------------------------')
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     if mode == '2':
         intervals = int(input('Enter number of intervals to search (default is ' + '\033[34m' + 'end_time_delta/24' + '\033[0m' + ' (one capture per day)): ') or round((end_time_delta-start_time_delta)/24))
         
-    tol = float(input('Enter tolerance for minimum distance search (default is + ' + '\033[34m' + '1/24/60' + '\033[0m' + '(1 minute)): ') or 1/24/60)
+    search_interval = float(input('Enter search_interval for minimum distance search (default is 1 (1 minute)): ') or 1)
     force = input('Enter ' + '\033[34m' + 'true' + '\033[0m' + ' to force update TLE data, or press Enter to skip: ').lower() == 'true'
     
     t_start = t_now + timedelta(hours=start_time_delta)
@@ -94,6 +94,6 @@ if __name__ == '__main__':
     log.info('Epoch: ' + str(sat))
     
     if mode == '1':
-        single_planner(t_start, t_end, sat, target, earth, tol, ts)
+        single_planner(t_start, t_end, sat, target, earth, search_interval, ts)
     elif mode == '2':
-        multi_planner(t_start, t_end, sat, target, intervals, earth, tol, ts)
+        multi_planner(t_start, t_end, sat, target, intervals, earth, search_interval, ts)

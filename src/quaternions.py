@@ -37,7 +37,7 @@ def skew_sym(x):
     
     return S
     
-def rot2q(R):
+def rot2q(R):  
     theta = np.arccos((np.trace(R)-1)/2)
     if np.isclose(theta, 0):
         e_hat = np.array([0, 0, 0])
@@ -106,3 +106,32 @@ def get_off_nadir_angle(time, earth, target, sat):
     off_nadir_angle = math.degrees(np.arccos(cos_off_nadir_angle))
 
     return off_nadir_angle
+
+def get_maximum_off_nadir_angle(t_start, t_end, obj, target, observer, search_interval = 1):
+    """
+    Find the time when the off nadir angle between a satellite and a target is at minimum within a timeframe.
+    """
+    
+    search_interval = search_interval * 1/24/60 # Transform from minutes to days
+    
+    max_off_nadir = get_off_nadir_angle(t_start, observer, target, obj)
+    max_t = t_start
+    total_iterations = (t_end.tt - t_start.tt) / search_interval
+    iter = 0
+    
+    log.debug('Looking for maximum off nadir angle between {} and {} from {} to {} with search_interval {}.'.format(obj.name, target, t_start.tt_strftime('%Y-%m-%d %H:%M:%S'), t_end.tt_strftime('%Y-%m-%d %H:%M:%S'), search_interval))
+    while t_start.tt + search_interval*iter < t_end.tt:
+        progress = iter / total_iterations * 100
+        print(f"Progress: {progress:.1f}%", end="\r")
+        
+        iter += 1 
+        t = t_start + search_interval*iter
+        off_nadir = get_off_nadir_angle(t, observer, target, obj)
+        if off_nadir > max_off_nadir:
+            max_t = t
+            max_off_nadir = off_nadir
+    
+    log.debug('Maximum off nadir angle found at {} with angle {} deg.'.format(max_t.utc_datetime(), max_off_nadir))
+    max_t = max_t.utc_datetime()
+    
+    return max_off_nadir, max_t

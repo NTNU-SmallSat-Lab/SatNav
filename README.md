@@ -45,7 +45,7 @@ The program will ask for the following parameters, empty inputs will use the def
 
 **Default = end_time-start_time/24**, i.e. one capture per day.
 
-* The tolerance (in days) for minimum time distance of search. 
+* The search interval (in days) for minimum time distance of search. 
 
 **Default = 1/24/60**, i.e. 1 minute.
 
@@ -66,7 +66,7 @@ The program will calculate the precise UTC time when the satellite is closest to
 
 ## Known Issues
 
-* There is no check to ensure that the target is not obscured by the Earth. This should not happen as it then clearly is not in it's closes point in orbit, but can happen if the tolerance parameter is too low. This check will be added in the future.
+* There is no check to ensure that the target is not obscured by the Earth. This should not happen as it then clearly is not in it's closes point in orbit, but can happen if the search interval parameter is too low. This check will be added in the future.
 
 * The program is under development, and unknown bugs are to be expected.
 
