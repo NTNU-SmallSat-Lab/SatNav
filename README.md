@@ -1,12 +1,12 @@
-# StarNav
+# SatNav
 
-StarNav is a Python program designed to calculate the precise UTC time when a satellite is closest to a target (e.g., the Moon) and then generate a quaternion to point the satellite's sensors towards that target.
+SatNav is a Python program designed to calculate the precise UTC time when a satellite is closest to a target (e.g., the Moon) and then generate a quaternion to point the satellite's sensors towards that target.
 
 ## Installation
 
 To install the program, clone the repository to your local machine:
 
-`git clone https://github.com/NTNU-SmallSat-Lab/StarNav.git`
+`git clone https://github.com/NTNU-SmallSat-Lab/SatNav.git`
 
 Then navigate to the root directory of the project and install the required dependencies using pip:
 
